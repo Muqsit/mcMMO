@@ -1,0 +1,4 @@
+name: mcMMO
+main: muqsit\mcMMO\mcMMO
+api: 3.0.0-ALPHA9
+version: 0.0.1

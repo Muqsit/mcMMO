@@ -1,0 +1,18 @@
+---
+# Available types:
+## json
+## yaml
+type: json
+
+# Connection information
+## For JSON and YAML connections, this is the directory where
+## you want to save the user data in.
+information: players
+
+# For mysql users only
+mysql:
+  host: 127.0.0.1
+  user: dont_use_root_as_user
+  passwd: abcd123
+  port: 3306
+...
