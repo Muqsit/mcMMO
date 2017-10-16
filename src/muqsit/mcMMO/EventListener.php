@@ -44,8 +44,11 @@ class EventListener implements Listener{
         if($action === PlayerInteractEvent::RIGHT_CLICK_AIR){
             $itemHandler->handleReadiness($event->getPlayer(), $event->getItem());
         }elseif($action === PlayerInteractEvent::LEFT_CLICK_BLOCK){
+            $skills = $this->plugin->getPlayer($event->getPlayer()->getId())->getSkillManager();
             if($itemHandler->isReady($event->getPlayer(), $event->getItem())){
-                $this->plugin->getPlayer($event->getPlayer()->getId())->getSkillManager()->handleReadyItemInteract($event);
+                $skills->handleReadyItemInteract($event);
+            }else{
+                $skills->handleUnreadyItemInteract($event);
             }
         }
     }

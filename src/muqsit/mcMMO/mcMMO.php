@@ -1,6 +1,7 @@
 <?php
 namespace muqsit\mcMMO;
 
+use muqsit\mcMMO\commands\mcMMOCommand;
 use muqsit\mcMMO\handlers\HandlerManager;
 
 use pocketmine\Player;
@@ -22,15 +23,14 @@ class mcMMO extends PluginBase{
 
     public function onEnable(){
         self::$instance = $this;
-
         $this->getServer()->getLogger()->notice("Enabled mcMMO");
 
         $this->saveResource("database.yml");
-
         $this->initProvider();
 
         $this->handlerManager = new HandlerManager();
 
+        mcMMOCommand::registerCommands($this);
         new EventListener($this);
     }
 

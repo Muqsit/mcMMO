@@ -2,14 +2,20 @@
 namespace muqsit\mcMMO\skills;
 
 use pocketmine\Player;
+use pocketmine\utils\TextFormat;
 
 class BaseSkill{
+
+    const SKILL_NAME = "XYZ";
 
     const XP_GAIN_THRESHOLD = PHP_INT_MAX;//limits the amount of experience a player can earn per XP_GAIN_THRESHOLD_INTERVAL
     const XP_GAIN_THRESHOLD_INTERVAL = 10;//minutes
 
     /** @var int */
     protected $xp;
+
+    /** @var int */
+    protected $level;
 
     /** @var int */
     private $lastXpGainMinute = PHP_INT_MIN;
@@ -27,6 +33,14 @@ class BaseSkill{
         if(!$this->thresholdReached()){
             $this->updateThreshold($xp);
             $this->xp += $xp;
+            if($this->xp >= $this->getNextLevelXp()){
+                $level = $this->level;
+                while($this->xp >= $this->getNextLevelXp()){
+                    $this->xp -= $this->getNextLevelXp();
+                    $this->level++;
+                }
+                $player->sendMessage(TextFormat::YELLOW.static::SKILL_NAME." skill increased by ".($this->level - $level).". Total (".$this->level.")");
+            }
         }
     }
 
@@ -67,10 +81,31 @@ class BaseSkill{
     }
 
     /**
+     * Returns this skill's experience
+     * level.
+     *
+     * @return int
+     */
+    public function getLevel() : int{
+        return $this->level;
+    }
+
+    /**
+     * Returns experience required to
+     * upgrade skill's experience level
+     * to next level.
+     *
+     * @return int
+     */
+    public function getNextLevelXp() : int{
+        return 1000 + 20 * ($this->level + 1);
+    }
+
+    /**
      * Returns arguments for recreating
      * this class instance.
      */
     public function getData(){
-        return $this->xp;
+        return [$this->xp, $this->level];
     }
 }

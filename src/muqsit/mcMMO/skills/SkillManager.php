@@ -1,7 +1,7 @@
 <?php
 namespace muqsit\mcMMO\skills;
 
-use pocketmine\block\Wood;
+use pocketmine\block\{Leaves, Wood};
 use pocketmine\event\player\PlayerInteractEvent;
 
 class SkillManager{
@@ -24,8 +24,9 @@ class SkillManager{
     }
 
     /**
-     * Handles interactions and calls the
-     * appropriate skill functions.
+     * Handles interactions with activated
+     * items and calls the appropriate
+     * skill functions.
      *
      * @param PlayerInteractEvent $event
      */
@@ -36,6 +37,23 @@ class SkillManager{
             if(!$this->getWoodcutting()->handleActivation($event->getPlayer(), $error) && isset($error)){
                 $event->getPlayer()->sendMessage($error);
             }
+            return;
+        }
+    }
+
+    /**
+     * Handles interactions caused by
+     * unactivated items and calls the
+     * appropriate skill functions.
+     *
+     * @param PlayerInteractEvent $event
+     */
+    public function handleUnreadyItemInteract(PlayerInteractEvent $event){
+        $item = $event->getItem();
+        $block = $event->getBlock();
+        if($item->isAxe() && $block instanceof Leaves){
+            $this->getWoodCutting()->handleLeafBlower($event->getPlayer(), $block, $item);
+            return;
         }
     }
 
@@ -45,8 +63,8 @@ class SkillManager{
      * @return Woodcutting
      */
     public function getWoodcutting() : Woodcutting{
-        $data = $this->data["woodcutting"] ?? 0;
-        return $data instanceof Woodcutting ? $data : $this->data["woodcutting"] = new Woodcutting($data);
+        $data = $this->data["woodcutting"] ?? [0, 0];
+        return $data instanceof Woodcutting ? $data : $this->data["woodcutting"] = new Woodcutting(...$data);
     }
 
     /**

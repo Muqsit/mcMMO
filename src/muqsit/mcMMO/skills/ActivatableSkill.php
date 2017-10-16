@@ -81,7 +81,6 @@ class ActivatableSkill extends BaseSkill{
      * activates the skill if the criteria
      * is met.
      *
-     * @param Player $player
      * @parma null $error
      *
      * @return bool
@@ -98,11 +97,10 @@ class ActivatableSkill extends BaseSkill{
      * Sends a delayed message to the
      * player.
      *
-     * @param Player $player
      * @param string $message
      * @param int $delay
      */
-    public function sendDelayedMessage(Player $player, string $message, int $delay = 2){//TODO: Move function out of this class.
+    public function sendDelayedMessage(Player $player, string $message, int $delay = 2){
         $player->getServer()->getScheduler()->scheduleDelayedTask(new class($player, $message) extends Task{
 
             /** @var Player */
@@ -117,7 +115,9 @@ class ActivatableSkill extends BaseSkill{
             }
 
             public function onRun(int $tick){
-                $this->player->sendMessage($this->message);
+                if($this->player->isAlive()){
+                    $this->player->sendMessage($this->message);
+                }
             }
         }, 20 * $delay);
     }
