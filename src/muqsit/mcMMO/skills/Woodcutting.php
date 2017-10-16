@@ -97,10 +97,11 @@ class Woodcutting extends ActivatableSkill{
             $ev = new BlockBreakEvent($player, $block, $item, true);
             $player->getServer()->getPluginManager()->callEvent($ev);
             if(!$ev->isCancelled()){
+                $level = $block->getLevel();
                 foreach($block->getDrops($item) as $drop){
                     $level->dropItem($block, $drop);
                 }
-                $player->getLevel()->setBlockIdAt($block->x, $block->y, $block->z, Block::AIR);
+                $level->setBlockIdAt($block->x, $block->y, $block->z, Block::AIR);
                 $player->getLevel()->addSound(new PopSound($player), [$player]);
             }
         }
