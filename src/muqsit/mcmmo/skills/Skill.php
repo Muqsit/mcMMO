@@ -1,6 +1,8 @@
 <?php
 namespace muqsit\mcmmo\skills;
 
+use pocketmine\Player;
+
 abstract class Skill implements SkillIds{
 
 	const SKILL_ID = -1;
@@ -15,15 +17,41 @@ abstract class Skill implements SkillIds{
 		return null;
 	}
 
+	/**
+	 * Returns all item ids that identify this ability.
+	 *
+	 * @return int[]
+	 */
+	public static function getItemIdentifies() : ?array{
+		return null;
+	}
+
 	/** @var int */
 	protected $xp;
 
 	/** @var int */
 	protected $level;
 
+	/** @var int */
+	protected $ability_expire;
+
+	/** @var int */
+	protected $ability_cooldown_expire;
+
 	public function __construct(array $args = []){
 		$this->xp = $args["xp"] ?? 0;
 		$this->level = $args["level"] ?? 0;
+		$this->ability_expire = $args["ability_expire"] ?? 0;
+		$this->ability_cooldown_expire = $args["ability_cooldown_expire"] ?? 0;
+	}
+
+	/**
+	 * Returns this skill's identifier.
+	 *
+	 * @return int
+	 */
+	public function getId() : int{
+		return static::SKILL_ID;
 	}
 
 	/**
@@ -96,8 +124,107 @@ abstract class Skill implements SkillIds{
 	public function serialize() : array{
 		return [
 			"xp" => $this->xp,
-			"level" => $this->level
+			"level" => $this->level,
+			"ability_expire" => $this->ability_expire,
+			"ability_cooldown_expire" => $this->ability_cooldown_expire
 		];
+	}
+
+	/**
+	 * Returns whether the ability is activated
+	 * (generally done by right-clicking a tool).
+	 *
+	 * @return bool
+	 */
+	public function hasAbility() : bool{
+		return $this->ability_expire >= time();
+	}
+
+	/**
+	 * Activates ability for duration seconds.
+	 * @return bool whether the ability is activated.
+	 */
+	final public function activateAbility(Player $player) : bool{
+		if($this->isAbilityOnCooldown()){
+			return false;
+		}
+
+		$this->ability_expire = time() + $this->getAbilityDuration();
+		$this->setAbilityCooldown();
+		$this->onActivateAbility($player);
+		return true;
+	}
+
+	/**
+	 * Returns the duration for a given ability.
+	 *
+	 * @return int
+	 */
+	public function getAbilityDuration() : int{
+		return 0;
+	}
+
+	/**
+	 * Returns whether the ability is on
+	 * cooldown.
+	 *
+	 * @return bool
+	 */
+	public function isAbilityOnCooldown() : bool{
+		return $this->ability_cooldown_expire > time();
+	}
+
+	/**
+	 * Returns the cooldown for a given ability.
+	 *
+	 * @return int
+	 */
+	public function getAbilityCooldown() : int{
+		return 0;
+	}
+
+	/**
+	 * Returns the time left for the ability to
+	 * deactivate (not to be confused with
+	 * ability's cooldown).
+	 *
+	 * @return int
+	 */
+	public function getAbilityExpire() : int{
+		return max(0, $this->ability_expire - time());
+	}
+
+	/**
+	 * Returns the time left for the abiity's cooldown
+	 * to expire.
+	 *
+	 * @return int
+	 */
+	public function getAbilityCooldownExpire() : int{
+		return max(0, $this->ability_cooldown_expire - time());
+	}
+
+	/**
+	 * Sets cooldown for an ability.
+	 */
+	public function setAbilityCooldown() : void{
+		$this->ability_cooldown_expire = time() + $this->getAbilityCooldown();
+	}
+
+	/**
+	 * Called when player activates the ability.
+	 */
+	public function onActivateAbility(Player $player) : void{
+	}
+
+	/**
+	 * Returns the ability name. This is show when
+	 * the ability gets activated.
+	 *
+	 * @return string
+	 */
+	public function getAbilityName() : string{
+		return $this->getName();
 	}
 
 	/**

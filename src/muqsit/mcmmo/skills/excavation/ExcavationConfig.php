@@ -70,7 +70,7 @@ class ExcavationConfig{
 		]){
 			$result[$skillreq][] = [
 				ExcavationConfig::TYPE_XPREWARD => $xpreward,
-				ExcavationConfig::TYPE_CHANCE => $chance * 100,//$chance = percentage with a precision of 2
+				ExcavationConfig::TYPE_CHANCE => (int) $chance * 100,//$chance = percentage with a precision of 2
 				ExcavationConfig::TYPE_DROPS => $drops
 			];
 		}
@@ -82,12 +82,14 @@ class ExcavationConfig{
 		return $item instanceof Shovel;
 	}
 
-	public function getDrops(Player $player, Item $item, Block $block, int $skill_level, &$xpreward = null) : array{
+	public function getDrops(Player $player, Item $item, Block $block, int $skill_level, bool $has_ability, &$xpreward = null) : array{
 		$xpreward = 0;
+		$multiplier = $has_ability ? 3 : 1;
+
 		if($this->isRightTool($item) && isset($this->values[$index = BlockFactory::toStaticRuntimeId($block->getId(), $block->getDamage())])){
 			$values = $this->values[$index];
 			if($skill_level >= $values[ExcavationConfig::TYPE_SKILLREQ]){
-				$xpreward = $values[ExcavationConfig::TYPE_XPREWARD];
+				$xpreward = $values[ExcavationConfig::TYPE_XPREWARD] * $multiplier;
 			}
 
 			if(isset($values[ExcavationConfig::TYPE_DROPS])){
@@ -98,8 +100,9 @@ class ExcavationConfig{
 							ExcavationConfig::TYPE_CHANCE => $chance,
 							ExcavationConfig::TYPE_DROPS => $drops
 						]){
+							$chance *= $multiplier;
 							if(mt_rand($chance, 10000) <= $chance){
-								$xpreward = $xprew;
+								$xpreward = $xprew * $multiplier;
 								return $drops;
 							}
 						}

@@ -22,11 +22,12 @@ class ExcavationListener extends SkillListener{
 	 */
 	public function onBlockBreak(BlockBreakEvent $event) : void{
 		$player = $event->getPlayer();
-		$skills = $this->plugin->getSkillManager($player);
-		$event->setDrops($this->config->getDrops($player, $event->getItem(), $event->getBlock(), $skills->getSkillLevel(self::EXCAVATION), $xpreward));
+		$manager = $this->plugin->getSkillManager($player);
+		$skill = $manager->getSkill(self::EXCAVATION);
+		$event->setDrops($this->config->getDrops($player, $event->getItem(), $event->getBlock(), $skill->getLevel(), $skill->hasAbility(), $xpreward));
 
 		if($xpreward > 0){
-			$skills->addSkillXp(self::EXCAVATION, $xpreward);
+			$manager->addSkillXp(self::EXCAVATION, $xpreward);
 		}
 	}
 }

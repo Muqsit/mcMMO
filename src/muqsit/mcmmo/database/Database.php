@@ -131,12 +131,13 @@ abstract class Database{
 	 * database.
 	 *
 	 * @param Player $player
-	 * @param bool $removeCached
+	 * @param bool $close
 	 */
-	final public function save(Player $player, bool $removeCached = false) : void{
+	final public function save(Player $player, bool $close = false) : void{
 		if(isset($this->loaded[$playerId = $player->getLowerCaseName()]) && !($this->loaded[$playerId] instanceof TemporarySkillManager)){
 			$this->saveToDatabase($player->getLowerCaseName(), $this->loaded[$playerId]->getSkillTree(true));
-			if($removeCached){
+			if($close){
+				$this->loaded[$playerId]->close($this->server);
 				unset($this->loaded[$playerId]);
 			}
 		}

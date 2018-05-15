@@ -2,22 +2,34 @@
 namespace muqsit\mcmmo\skills;
 
 use muqsit\mcmmo\skills\excavation\ExcavationSkill;
+use muqsit\mcmmo\skills\tasks\AbilityCooldownNotifyTask;
+use muqsit\mcmmo\skills\tasks\AbilityDeactivateNotifyTask;
 use muqsit\mcmmo\sounds\McMMOLevelUpSound;
 
+use pocketmine\item\Item;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 
 class SkillManager{
 
+	const TASK_ABILITY_DEACTIVATE_NOTIFY = 0;
+	const TASK_ABILITY_COOLDOWN_NOTIFY = 1;
+
 	/** @var string[] */
 	private static $skills = [];
+
+	/** @var int[] */
+	private static $skill_identifiers = [];
 
 	/** @var Skill[] */
 	private $skill_tree = [];
 
 	/** @var Player */
 	private $player;
+
+	/** @var int[] */
+	private $taskIds = [];
 
 	public static function registerSkill(string $class, bool $override = false) : void{
 		$skillId = $class::SKILL_ID;
@@ -28,10 +40,12 @@ class SkillManager{
 		if(!isset(SkillManager::$skills[$skillId]) || $override){
 			if(isset(SkillManager::$skills[$skillId])){
 				$oldskill = SkillManager::$skills[$skillId];
-				$oldlistener = $oldSkill::getListenerClass();
+				$oldlistener = $oldskill::getListenerClass();
 				if($oldlistener !== null && is_subclass_of($oldskill, SkillListener::class, true)){
 					//TODO: Unregister oldlistener
 				}
+
+				SkillManager::removeSkillIdentifiers($skillId);
 			}
 
 			SkillManager::$skills[$skillId] = $class;
@@ -46,6 +60,11 @@ class SkillManager{
 				$plugin = $server->getPluginManager()->getPlugin("mcMMO");
 				$server->getPluginManager()->registerEvents(new $listener($plugin), $plugin);
 			}
+
+			$identifiers = $class::getItemIdentifies();
+			if($identifiers !== null){
+				SkillManager::addSkillIdentifiers($skillId, ...$identifiers);
+			}
 			return;
 		}
 
@@ -54,6 +73,18 @@ class SkillManager{
 
 	public static function registerDefaults() : void{
 		SkillManager::registerSkill(ExcavationSkill::class);
+	}
+
+	public static function addSkillIdentifiers(int $skillId, int ...$itemIds) : void{
+		foreach($itemIds as $itemId){
+			SkillManager::$skill_identifiers[$itemId] = $skillId;
+		}
+	}
+
+	public static function removeSkillIdentifiers(int $skillId) : void{
+		foreach(array_keys(SkillManager::$skill_identifiers, $skillId, true) as $itemId){
+			unset(SkillManager::$skill_identifiers[$itemId]);
+		}
 	}
 
 	public static function getSkillClass(int $skillId) : ?string{
@@ -106,12 +137,28 @@ class SkillManager{
 		}
 	}
 
-	public function getSkillXp(int $skillId) : int{
-		return $this->getSkill($skillId)->getXp();
-	}
+	public function activateAbility(int $skillId) : bool{
+		$skill = $this->getSkill($skillId);
+		$player = $this->getPlayer();
+		if($skill->activateAbility($player)){
+			$scheduler = $player->getServer()->getScheduler();
+			if(isset($this->taskIds[SkillManager::TASK_ABILITY_DEACTIVATE_NOTIFY])){
+				$scheduler->cancelTask($this->taskIds[SkillManager::TASK_ABILITY_DEACTIVATE_NOTIFY]);
+			}
 
-	public function getSkillLevel(int $skillId) : int{
-		return $this->getSkill($skillId)->getLevel();
+			$scheduler->scheduleDelayedTask($task = new AbilityDeactivateNotifyTask($this, $skillId), $skill->getAbilityExpire() * 20);
+			$this->addIncompleteTask(SkillManager::TASK_ABILITY_DEACTIVATE_NOTIFY, $task->getTaskId());
+
+			if(isset($this->taskIds[SkillManager::TASK_ABILITY_COOLDOWN_NOTIFY])){
+				$scheduler->cancelTask($this->taskIds[SkillManager::TASK_ABILITY_COOLDOWN_NOTIFY]);
+			}
+
+			$scheduler->scheduleDelayedTask($task = new AbilityCooldownNotifyTask($this, $skillId), $skill->getAbilityCooldownExpire() * 20);
+			$this->addIncompleteTask(SkillManager::TASK_ABILITY_COOLDOWN_NOTIFY, $task->getTaskId());
+			return true;
+		}
+
+		return false;
 	}
 
 	public function getSkill(int $skillId) : ?Skill{
@@ -127,9 +174,32 @@ class SkillManager{
 		return null;
 	}
 
+	public function getSkillByItem(Item $item) : ?Skill{
+		if(isset(SkillManager::$skill_identifiers[$itemId = $item->getId()])){
+			return $this->getSkill(SkillManager::$skill_identifiers[$itemId]);
+		}
+
+		return null;
+	}
+
 	public function merge(SkillManager $skill) : void{
 		foreach($skill->getSkillTree() as $skillId => $instance){
 			$this->addXp($skillId, $instance->getXp());
+		}
+	}
+
+	public function addIncompleteTask(int $id, int $taskId) : void{
+		$this->taskIds[$id] = $taskId;
+	}
+
+	public function setTaskAsCompleted(int $id) : void{
+		unset($this->taskIds[$id]);
+	}
+
+	public function close(Server $server) : void{
+		$scheduler = $server->getScheduler();
+		foreach($this->taskIds as $taskId){
+			$scheduler->cancelTask($taskId);
 		}
 	}
 }
