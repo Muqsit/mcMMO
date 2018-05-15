@@ -4,8 +4,8 @@ namespace muqsit\mcmmo\commands;
 use muqsit\mcmmo\Loader;
 
 use pocketmine\command\CommandExecutor;
-use pocketmine\command\ConsoleCommandSender;
 use pocketmine\command\CommandSender;
+use pocketmine\command\ConsoleCommandSender;
 use pocketmine\command\PluginCommand;
 use pocketmine\utils\TextFormat;
 
@@ -73,8 +73,8 @@ abstract class McMMOCommand extends PluginCommand implements CommandExecutor{
 		return ($this->flags & $flag) === $flag;
 	}
 
-	private function testFlags(CommandSender $sender) : bool{
-		if(($sender instanceof ConsoleCommandSender) && $this->isFlagSet(McMMOCommand::FLAG_NO_CONSOLE)){
+	public function testFlags(CommandSender $sender) : bool{
+		if($sender instanceof ConsoleCommandSender && $this->isFlagSet(McMMOCommand::FLAG_NO_CONSOLE)){
 			$sender->sendMessage(TextFormat::RED . "This command does not support console usage.");
 			return false;
 		}
@@ -82,8 +82,12 @@ abstract class McMMOCommand extends PluginCommand implements CommandExecutor{
 		return true;
 	}
 
-	public function testPermission(CommandSender $sender) : bool{
-		return parent::testPermission($sender) && $this->testFlags($sender);
+	final public function execute(CommandSender $sender, string $commandLabel, array $args) : bool{
+		if(!$this->testFlags($sender)){
+			return false;
+		}
+
+		return parent::execute($sender, $commandLabel, $args);
 	}
 
 	protected function init() : void{

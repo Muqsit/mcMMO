@@ -9,7 +9,7 @@ use pocketmine\utils\TextFormat;
 class McRefreshCommand extends McMMOCommand{
 
 	public function onCommand(CommandSender $sender, Command $cmd, string $commandLabel, array $args) : bool{
-		if(($sender instanceof ConsoleCommandSender) && !isset($args[0])){
+		if($sender instanceof ConsoleCommandSender && !isset($args[0])){
 			$sender->sendMessage(TextFormat::RED . "Usage /mcrefresh <player>");
 			return false;
 		}
