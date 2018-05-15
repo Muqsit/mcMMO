@@ -38,9 +38,9 @@ class SkillManager{
 
 			$listener = $class::getListenerClass();
 			if($listener !== null){
-                if (!is_subclass_of($listener, SkillListener::class, true)) {
+				if (!is_subclass_of($listener, SkillListener::class, true)) {
 					throw new \Error("$listener must be an instance of " . SkillListener::class);
-                }
+				}
 
 				$server = Server::getInstance();
 				$plugin = $server->getPluginManager()->getPlugin("mcMMO");
