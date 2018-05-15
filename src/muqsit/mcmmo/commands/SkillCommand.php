@@ -17,7 +17,8 @@ abstract class SkillCommand extends PluginCommand implements SkillIds{
 		$commands = [];
 
 		foreach([
-			"excavation" => [ExcavationCommand::class]
+			"excavation" => [ExcavationCommand::class],
+			"woodcutting" => [WoodcuttingCommand::class]
 		] as $cmd => $data){
 			$commands[$cmd] = new $data[0]($cmd, $plugin);
 
@@ -50,7 +51,7 @@ abstract class SkillCommand extends PluginCommand implements SkillIds{
 
 		return TextFormat::RED . "-----[]" . TextFormat::GREEN . $skill_name . TextFormat::RED . "[]-----" . TextFormat::EOL .
 			TextFormat::DARK_GRAY . "XP GAIN: " . TextFormat::WHITE . $skill->getShortDescription() . TextFormat::EOL .
-			TextFormat::DARK_GRAY . "LVL: " . TextFormat::GREEN . $skill->getLevel() . TextFormat::DARK_AQUA . "XP" . TextFormat::YELLOW . "(" . TextFormat::GOLD . number_format($skill->getXp()) . TextFormat::YELLOW . "/" . TextFormat::GOLD . number_format($skill->getMaxLevelXp()) . TextFormat::YELLOW . ")" . TextFormat::EOL .
+			TextFormat::DARK_GRAY . "LVL: " . TextFormat::GREEN . $skill->getLevel() . TextFormat::DARK_AQUA . " XP" . TextFormat::YELLOW . "(" . TextFormat::GOLD . number_format($skill->getXp()) . TextFormat::YELLOW . "/" . TextFormat::GOLD . number_format($skill->getMaxLevelXp()) . TextFormat::YELLOW . ")" . TextFormat::EOL .
 			TextFormat::RED . "-----[]" . TextFormat::GREEN . "EFFECTS" . TextFormat::RED . "[]-----" . TextFormat::EOL .
 			$this->getSkillEffects($player, $skill) . TextFormat::EOL .
 			TextFormat::RED . "-----[]" . TextFormat::GREEN . "YOUR STATS" . TextFormat::RED . "[]-----" . TextFormat::EOL .

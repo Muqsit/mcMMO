@@ -1,5 +1,5 @@
 <?php
-namespace muqsit\mcmmo\skills\excavation;
+namespace muqsit\mcmmo\skills\woodcutting;
 
 use muqsit\mcmmo\skills\Skill;
 
@@ -8,38 +8,41 @@ use pocketmine\entity\EffectInstance;
 use pocketmine\item\Item;
 use pocketmine\Player;
 
-class ExcavationSkill extends Skill{
+class WoodcuttingSkill extends Skill{
 
-	const SKILL_ID = self::EXCAVATION;
+	const SKILL_ID = self::WOODCUTTING;
 
 	public static function getListenerClass() : ?string{
-		return ExcavationListener::class;
+		return WoodcuttingListener::class;
 	}
 
 	public static function getItemIdentifies() : ?array{
 		return [
-			Item::IRON_SHOVEL,
-			Item::WOODEN_SHOVEL,
-			Item::STONE_SHOVEL,
-			Item::DIAMOND_SHOVEL,
-			Item::GOLDEN_SHOVEL
+			Item::IRON_AXE,
+			Item::WOODEN_AXE,
+			Item::STONE_AXE,
+			Item::DIAMOND_AXE,
+			Item::GOLDEN_AXE
 		];
 	}
 
 
 	public function getName() : string{
-		return "Excavation";
+		return "Woodcutting";
 	}
 
 	public function getShortDescription() : string{
-		return "Digging and finding treasures";
+		return "Chopping down trees";
 	}
 
 	public function getAbilityName() : string{
-		return "Giga Drill Breaker";
+		return "Tree Feller";
+	}
+
+	public function getDoubleDropChance() : float{
+		return min(100, $this->getLevel() / 10);
 	}
 
 	public function onActivateAbility(Player $player) : void{
-		$player->addEffect(new EffectInstance(Effect::getEffect(Effect::HASTE), $this->getAbilityDuration() * 20, 3, false));
 	}
 }

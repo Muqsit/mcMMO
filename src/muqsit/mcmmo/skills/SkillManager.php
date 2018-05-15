@@ -4,6 +4,7 @@ namespace muqsit\mcmmo\skills;
 use muqsit\mcmmo\skills\excavation\ExcavationSkill;
 use muqsit\mcmmo\skills\tasks\AbilityCooldownNotifyTask;
 use muqsit\mcmmo\skills\tasks\AbilityDeactivateNotifyTask;
+use muqsit\mcmmo\skills\woodcutting\WoodcuttingSkill;
 use muqsit\mcmmo\sounds\McMMOLevelUpSound;
 
 use pocketmine\item\Item;
@@ -73,6 +74,7 @@ class SkillManager{
 
 	public static function registerDefaults() : void{
 		SkillManager::registerSkill(ExcavationSkill::class);
+		SkillManager::registerSkill(WoodcuttingSkill::class);
 	}
 
 	public static function addSkillIdentifiers(int $skillId, int ...$itemIds) : void{
@@ -124,7 +126,8 @@ class SkillManager{
 
 	private function setSkillTree(array $skill_tree) : void{
 		foreach($skill_tree as $skillId => $skillInfo){
-			$this->skill_tree[$skillId] = SkillManager::getSkillInstance($skillId, $skillInfo); 
+			$this->skill_tree[$skillId] = $skill = SkillManager::getSkillInstance($skillId, $skillInfo);
+			$this->scheduleSkillTasks($skill);
 		}
 	}
 
@@ -141,23 +144,9 @@ class SkillManager{
 		$skill = $this->getSkill($skillId);
 		$player = $this->getPlayer();
 		if($skill->activateAbility($player)){
-			$scheduler = $player->getServer()->getScheduler();
-			if(isset($this->taskIds[SkillManager::TASK_ABILITY_DEACTIVATE_NOTIFY])){
-				$scheduler->cancelTask($this->taskIds[SkillManager::TASK_ABILITY_DEACTIVATE_NOTIFY]);
-			}
-
-			$scheduler->scheduleDelayedTask($task = new AbilityDeactivateNotifyTask($this, $skillId), $skill->getAbilityExpire() * 20);
-			$this->addIncompleteTask(SkillManager::TASK_ABILITY_DEACTIVATE_NOTIFY, $task->getTaskId());
-
-			if(isset($this->taskIds[SkillManager::TASK_ABILITY_COOLDOWN_NOTIFY])){
-				$scheduler->cancelTask($this->taskIds[SkillManager::TASK_ABILITY_COOLDOWN_NOTIFY]);
-			}
-
-			$scheduler->scheduleDelayedTask($task = new AbilityCooldownNotifyTask($this, $skillId), $skill->getAbilityCooldownExpire() * 20);
-			$this->addIncompleteTask(SkillManager::TASK_ABILITY_COOLDOWN_NOTIFY, $task->getTaskId());
+			$this->scheduleSkillTasks($skill);
 			return true;
 		}
-
 		return false;
 	}
 
@@ -188,18 +177,47 @@ class SkillManager{
 		}
 	}
 
-	public function addIncompleteTask(int $id, int $taskId) : void{
-		$this->taskIds[$id] = $taskId;
+	public function scheduleSkillTasks(Skill $skill) : void{
+		$scheduler = $this->getPlayer()->getServer()->getScheduler();
+		$skillId = $skill->getId();
+
+		if(isset($this->taskIds[SkillManager::TASK_ABILITY_DEACTIVATE_NOTIFY][$skillId])){
+			$scheduler->cancelTask($this->taskIds[SkillManager::TASK_ABILITY_DEACTIVATE_NOTIFY][$skillId]);
+		}
+
+		$expire = $skill->getAbilityExpire();
+		if($expire > 0){
+			$scheduler->scheduleDelayedTask($task = new AbilityDeactivateNotifyTask($this, $skillId), $expire * 20);
+			$this->addIncompleteTask(SkillManager::TASK_ABILITY_DEACTIVATE_NOTIFY, $skillId, $task->getTaskId());
+		}
+
+		if(isset($this->taskIds[SkillManager::TASK_ABILITY_COOLDOWN_NOTIFY][$skillId])){
+			$scheduler->cancelTask($this->taskIds[SkillManager::TASK_ABILITY_COOLDOWN_NOTIFY][$skillId]);
+		}
+
+		$expire = $skill->getAbilityCooldownExpire();
+		if($expire > 0){
+			$scheduler->scheduleDelayedTask($task = new AbilityCooldownNotifyTask($this, $skillId), $expire * 20);
+			$this->addIncompleteTask(SkillManager::TASK_ABILITY_COOLDOWN_NOTIFY, $skillId, $task->getTaskId());
+		}
 	}
 
-	public function setTaskAsCompleted(int $id) : void{
-		unset($this->taskIds[$id]);
+	public function addIncompleteTask(int $id, int $skillId, int $taskId) : void{
+		$this->taskIds[$id][$skillId] = $taskId;
+	}
+
+	public function setTaskAsCompleted(int $id, int $skillId) : void{
+		unset($this->taskIds[$id][$skillId]);
 	}
 
 	public function close(Server $server) : void{
 		$scheduler = $server->getScheduler();
-		foreach($this->taskIds as $taskId){
-			$scheduler->cancelTask($taskId);
+		foreach($this->taskIds as $taskIds){
+			foreach($taskIds as $taskId){
+				$scheduler->cancelTask($taskId);
+			}
 		}
+
+		$this->taskIds = [];
 	}
 }

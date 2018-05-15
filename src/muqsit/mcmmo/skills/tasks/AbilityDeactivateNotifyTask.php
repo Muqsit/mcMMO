@@ -9,7 +9,7 @@ class AbilityDeactivateNotifyTask extends SkillTask{
 
 	public function onRun(int $tick) : void{
 		$skill_manager = $this->getSkillManager();
-		$skill_manager->getPlayer()->sendMessage(TextFormat::RED . "**" . $this->getSkill()->getName() . " has worn off**");
-		$skill_manager->setTaskAsCompleted(SkillManager::TASK_ABILITY_DEACTIVATE_NOTIFY);
+		$skill_manager->getPlayer()->sendMessage(TextFormat::RED . "**" . $this->getSkill()->getAbilityName() . " has worn off**");
+		$skill_manager->setTaskAsCompleted(SkillManager::TASK_ABILITY_DEACTIVATE_NOTIFY, $this->getSkillId());
 	}
 }

@@ -161,7 +161,7 @@ abstract class Skill implements SkillIds{
 	 * @return int
 	 */
 	public function getAbilityDuration() : int{
-		return 0;
+		return 2 * floor($this->getLevel() / 50) + 2;
 	}
 
 	/**
@@ -180,7 +180,7 @@ abstract class Skill implements SkillIds{
 	 * @return int
 	 */
 	public function getAbilityCooldown() : int{
-		return 0;
+		return 250;
 	}
 
 	/**
