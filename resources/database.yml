@@ -1,18 +1,20 @@
 ---
-# Available types:
-## json
-## yaml
-type: json
+# mcMMO database file
 
-# Connection information
-## For JSON and YAML connections, this is the directory where
-## you want to save the user data in.
-information: players
+# The type of database to use.
+# Supported types: json, yaml, igbinary
+# NOTE: If you are using igbinary, you may need to install php-igbinary manually.
+type: yaml
 
-# For mysql users only
-mysql:
-  host: 127.0.0.1
-  user: dont_use_root_as_user
-  passwd: abcd123
-  port: 3306
+# Configuration for YAML
+YAML:
+  datafolder: profiles
+
+# Configuration for JSON
+JSON:
+  datafolder: profiles
+
+# Configuration for igbinary
+IGBINARY:
+  datafolder: profiles
 ...
