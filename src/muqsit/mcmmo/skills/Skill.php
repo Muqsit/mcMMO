@@ -41,8 +41,16 @@ abstract class Skill implements SkillIds{
 	public function __construct(array $args = []){
 		$this->xp = $args["xp"] ?? 0;
 		$this->level = $args["level"] ?? 0;
+
 		$this->ability_expire = $args["ability_expire"] ?? 0;
+		if($this->ability_expire > 0){
+			$this->setAbilityExpire($this->ability_expire);
+		}
+
 		$this->ability_cooldown_expire = $args["ability_cooldown_expire"] ?? 0;
+		if($this->ability_cooldown_expire > 0){
+			$this->setAbilityCooldown($this->ability_cooldown_expire);
+		}
 	}
 
 	/**
@@ -157,8 +165,8 @@ abstract class Skill implements SkillIds{
 		return [
 			"xp" => $this->xp,
 			"level" => $this->level,
-			"ability_expire" => $this->ability_expire,
-			"ability_cooldown_expire" => $this->ability_cooldown_expire
+			"ability_expire" => $this->getAbilityExpire(),
+			"ability_cooldown_expire" => $this->getAbilityCooldownExpire()
 		];
 	}
 
@@ -181,7 +189,7 @@ abstract class Skill implements SkillIds{
 			return false;
 		}
 
-		$this->ability_expire = time() + $this->getAbilityDuration();
+		$this->setAbilityExpire();
 		$this->setAbilityCooldown();
 		$this->onActivateAbility($player);
 		return true;
@@ -227,6 +235,15 @@ abstract class Skill implements SkillIds{
 	}
 
 	/**
+	 * Sets expire time for an ability.
+	 *
+	 * @param int|null $duration
+	 */
+	public function setAbilityExpire(?int $duration = null) : void{
+		$this->ability_expire = time() + ($duration ?? $this->getAbilityDuration());
+	}
+
+	/**
 	 * Returns the time left for the abiity's cooldown
 	 * to expire.
 	 *
@@ -238,9 +255,11 @@ abstract class Skill implements SkillIds{
 
 	/**
 	 * Sets cooldown for an ability.
+	 *
+	 * @param int|null $duration
 	 */
-	public function setAbilityCooldown() : void{
-		$this->ability_cooldown_expire = time() + $this->getAbilityCooldown();
+	public function setAbilityCooldown(?int $duration = null) : void{
+		$this->ability_cooldown_expire = time() + ($duration ?? $this->getAbilityCooldown());
 	}
 
 	/**
