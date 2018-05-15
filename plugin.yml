@@ -2,3 +2,12 @@ name: mcMMO
 main: muqsit\mcmmo\Loader
 api: 3.0.0-ALPHA12
 version: 1.0
+author: Muqsit
+
+permissions:
+  mcmmo.commands.modifs:
+    default: op
+  mcmmo.commands.skills:
+    default: true
+  mcmmo.commands.others:
+    default: true

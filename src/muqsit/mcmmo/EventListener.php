@@ -32,11 +32,13 @@ class EventListener implements Listener{
 			if($item instanceof Tool){
 				$player = $event->getPlayer();
 				$skill_manager = $this->plugin->getSkillManager($player);
-				$skill = $skill_manager->getSkillByItem($item);
-				if($skill !== null){
-					$player->sendMessage($skill_manager->activateAbility($skill->getId()) ? TextFormat::GREEN . "**" . strtoupper($skill->getAbilityName()) . TextFormat::GREEN . " ACTIVATED**" :
-						TextFormat::RED . "You are too tired to use that ability again. " . TextFormat::YELLOW . "(" . $skill->getAbilityCooldownExpire() . "s)"
-					);
+				if($skill_manager->canUseAbilities()){
+					$skill = $skill_manager->getSkillByItem($item);
+					if($skill !== null){
+						$player->sendMessage($skill_manager->activateAbility($skill->getId()) ? TextFormat::GREEN . "**" . strtoupper($skill->getAbilityName()) . TextFormat::GREEN . " ACTIVATED**" :
+							TextFormat::RED . "You are too tired to use that ability again. " . TextFormat::YELLOW . "(" . $skill->getAbilityCooldownExpire() . "s)"
+						);
+					}
 				}
 			}
 		}

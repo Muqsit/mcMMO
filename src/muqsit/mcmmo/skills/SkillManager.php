@@ -20,6 +20,9 @@ class SkillManager{
 	/** @var string[] */
 	private static $skills = [];
 
+	/** @var string[] */
+	private static $skill_names = [];
+
 	/** @var int[] */
 	private static $skill_identifiers = [];
 
@@ -31,6 +34,9 @@ class SkillManager{
 
 	/** @var int[] */
 	private $taskIds = [];
+
+	/** @var bool */
+	private $can_use_abilities;
 
 	public static function registerSkill(string $class, bool $override = false) : void{
 		$skillId = $class::SKILL_ID;
@@ -47,6 +53,7 @@ class SkillManager{
 				}
 
 				SkillManager::removeSkillIdentifiers($skillId);
+				unset(SkillManager::$skill_names[strtolower((new $oldskill())->getName())]);
 			}
 
 			SkillManager::$skills[$skillId] = $class;
@@ -66,6 +73,8 @@ class SkillManager{
 			if($identifiers !== null){
 				SkillManager::addSkillIdentifiers($skillId, ...$identifiers);
 			}
+
+			SkillManager::$skill_names[strtolower((new $class())->getName())] = $skillId;
 			return;
 		}
 
@@ -89,6 +98,10 @@ class SkillManager{
 		}
 	}
 
+	public static function getSkillIdByName(string $name) : ?int{
+		return SkillManager::$skill_names[strtolower($name)] ?? null;
+	}
+
 	public static function getSkillClass(int $skillId) : ?string{
 		return SkillManager::$skills[$skillId] ?? null;
 	}
@@ -102,13 +115,22 @@ class SkillManager{
 		return null;
 	}
 
-	public function __construct(Player $player, array $skill_tree){
+	public function __construct(Player $player, array $savedata){
 		$this->player = $player;
-		$this->setSkillTree($skill_tree);
+		$this->setCanUseAbilities($savedata["ability_use"] ?? true);
+		$this->setSkillTree($savedata["skill_tree"] ?? []);
 	}
 
 	public function getPlayer() : Player{
 		return $this->player;
+	}
+
+	public function canUseAbilities() : bool{
+		return $this->can_use_abilities;
+	}
+
+	public function setCanUseAbilities(bool $value = true) : void{
+		$this->can_use_abilities = $value;
 	}
 
 	public function getSkillTree(bool $clean = false) : array{
@@ -122,6 +144,13 @@ class SkillManager{
 		}
 
 		return $this->skill_tree;
+	}
+
+	public function toSaveData() : array{
+		return [
+			"ability_use" => $this->canUseAbilities(),
+			"skill_tree" => $this->getSkillTree(true)
+		];
 	}
 
 	private function setSkillTree(array $skill_tree) : void{

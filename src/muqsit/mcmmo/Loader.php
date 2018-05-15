@@ -1,7 +1,7 @@
 <?php
 namespace muqsit\mcmmo;
 
-use muqsit\mcmmo\commands\SkillCommand;
+use muqsit\mcmmo\commands\McMMOCommand;
 use muqsit\mcmmo\database\Database;
 use muqsit\mcmmo\skills\SkillManager;
 
@@ -17,7 +17,7 @@ class Loader extends PluginBase{
 	public function onEnable() : void{
 		$this->saveResource("database.yml");
 
-		SkillCommand::registerDefaults($this);
+		McMMOCommand::registerDefaults($this);
 		SkillManager::registerDefaults();
 
 		$database = new Config($this->getDataFolder() . "database.yml");

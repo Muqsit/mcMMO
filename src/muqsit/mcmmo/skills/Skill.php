@@ -116,6 +116,31 @@ abstract class Skill implements SkillIds{
 	}
 
 	/**
+	 * Adds levels to this skill.
+	 *
+	 * @param int $levels
+	 * @return bool whether levels were successfully added.
+	 */
+	public function addLevels(int $levels) : bool{
+		if($levels < 1){
+			return false;
+		}
+
+		$this->level += $levels;
+		return true;
+	}
+
+	/**
+	 * Resets this skill's values to default values.
+	 */
+	public function reset() : void{
+		$this->xp = 0;
+		$this->level = 0;
+		$this->ability_expire = 0;
+		$this->ability_cooldown_expire = 0;
+	}
+
+	/**
 	 * This is stored in the savedata
 	 * and fetched in the constructor.
 	 *

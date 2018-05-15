@@ -1,45 +1,19 @@
 <?php
 namespace muqsit\mcmmo\commands;
 
-use muqsit\mcmmo\Loader;
 use muqsit\mcmmo\skills\Skill;
 use muqsit\mcmmo\skills\SkillIds;
 use muqsit\mcmmo\skills\SkillManager;
 
 use pocketmine\command\CommandSender;
-use pocketmine\command\PluginCommand;
+use pocketmine\command\Command;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 
-abstract class SkillCommand extends PluginCommand implements SkillIds{
+abstract class SkillCommand extends McMMOCommand implements SkillIds{
 
-	public static function registerDefaults(Loader $plugin) : void{
-		$commands = [];
-
-		foreach([
-			"excavation" => [ExcavationCommand::class],
-			"woodcutting" => [WoodcuttingCommand::class]
-		] as $cmd => $data){
-			$commands[$cmd] = new $data[0]($cmd, $plugin);
-
-			if(!empty($data[1])){
-				$commands[$cmd]->setAliases($data[1]);
-			}
-
-			if(!empty($data[2])){
-				$commands[$cmd]->setPermission($data[2]);
-			}
-
-			if(!empty($data[3])){
-				$commands[$cmd]->setDescription($data[3]);
-			}
-		}
-
-		$plugin->getServer()->getCommandMap()->registerAll($plugin->getName(), $commands);
-	}
-
-	public function __construct(string $cmd, Loader $plugin){
-		parent::__construct($cmd, $plugin);
+	public function init() : void{
+		$this->setFlag(McMMOCommand::FLAG_NO_CONSOLE);
 	}
 
 	abstract public function getSkillId() : int;
@@ -65,7 +39,7 @@ abstract class SkillCommand extends PluginCommand implements SkillIds{
 
 	abstract public function getSkillStats(Player $player, Skill $skill) : string;
 
-	public function execute(CommandSender $sender, string $commandLabel, array $args) : bool{
+	public function onCommand(CommandSender $sender, Command $cmd, string $commandLabel, array $args) : bool{
 		if(isset($args[0]) && $args[0] === "?"){
 			$page = (int) ($args[1] ?? 1);
 			$sender->sendMessage($this->getHelpMessage($page));

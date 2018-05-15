@@ -135,7 +135,7 @@ abstract class Database{
 	 */
 	final public function save(Player $player, bool $close = false) : void{
 		if(isset($this->loaded[$playerId = $player->getLowerCaseName()]) && !($this->loaded[$playerId] instanceof TemporarySkillManager)){
-			$this->saveToDatabase($player->getLowerCaseName(), $this->loaded[$playerId]->getSkillTree(true));
+			$this->saveToDatabase($player->getLowerCaseName(), $this->loaded[$playerId]->toSaveData());
 			if($close){
 				$this->loaded[$playerId]->close($this->server);
 				unset($this->loaded[$playerId]);
@@ -150,7 +150,7 @@ abstract class Database{
 	 */
 	final public function saveAll() : void{
 		foreach($this->loaded as $player => $loaded){
-			$this->saveToDatabase($player, $loaded->getSkillTree(true));
+			$this->saveToDatabase($player, $loaded->toSaveData());
 		}
 	}
 
