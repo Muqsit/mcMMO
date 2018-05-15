@@ -20,6 +20,7 @@ abstract class McMMOCommand extends PluginCommand implements CommandExecutor{
 			//Admin commands
 			"addlevels" =>   [AddLevelsCommand::class, [], "mcmmo.commands.modifs"],
 			"addxp" =>       [AddXpCommand::class, [], "mcmmo.commands.modifs"],
+			"mcrefresh" =>   [McRefreshCommand::class, [], "mcmmo.commands.modifs"],
 			"skillreset" =>  [SkillResetCommand::class, [], "mcmmo.commands.modifs"],
 
 			//Skill commands

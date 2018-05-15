@@ -136,6 +136,13 @@ abstract class Skill implements SkillIds{
 	public function reset() : void{
 		$this->xp = 0;
 		$this->level = 0;
+		$this->refresh();
+	}
+
+	/**
+	 * Resets cooldowns.
+	 */
+	public function refresh() : void{
 		$this->ability_expire = 0;
 		$this->ability_cooldown_expire = 0;
 	}
