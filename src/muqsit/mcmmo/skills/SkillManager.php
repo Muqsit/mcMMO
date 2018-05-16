@@ -1,6 +1,7 @@
 <?php
 namespace muqsit\mcmmo\skills;
 
+use muqsit\mcmmo\skills\acrobatics\AcrobaticsSkill;
 use muqsit\mcmmo\skills\excavation\ExcavationSkill;
 use muqsit\mcmmo\skills\tasks\AbilityCooldownNotifyTask;
 use muqsit\mcmmo\skills\tasks\AbilityDeactivateNotifyTask;
@@ -84,6 +85,7 @@ class SkillManager{
 	public static function registerDefaults() : void{
 		SkillManager::registerSkill(ExcavationSkill::class);
 		SkillManager::registerSkill(WoodcuttingSkill::class);
+		SkillManager::registerSkill(AcrobaticsSkill::class);
 	}
 
 	public static function addSkillIdentifiers(int $skillId, int ...$itemIds) : void{

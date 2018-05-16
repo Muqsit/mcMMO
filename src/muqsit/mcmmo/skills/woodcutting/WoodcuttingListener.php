@@ -17,6 +17,11 @@ class WoodcuttingListener extends SkillListener{
 		$this->config = new WoodcuttingConfig();
 	}
 
+	/**
+	 * @param PlayerInteractEvent $event
+	 * @priority HIGH
+	 * @ignoreCancelled true
+	 */
 	public function onPlayerInteract(PlayerInteractEvent $event) : void{
 		$block = $event->getBlock();
 		$item = $event->getItem();

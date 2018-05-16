@@ -24,6 +24,7 @@ abstract class McMMOCommand extends PluginCommand implements CommandExecutor{
 			"skillreset" =>  [SkillResetCommand::class, [], "mcmmo.commands.modifs"],
 
 			//Skill commands
+			"acrobatics" =>  [AcrobaticsCommand::class, [], "mcmmo.commands.skills"],
 			"excavation" =>  [ExcavationCommand::class, [], "mcmmo.commands.skills"],
 			"woodcutting" => [WoodcuttingCommand::class, [], "mcmmo.commands.skills"],
 

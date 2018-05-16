@@ -21,7 +21,9 @@ class EventListener implements Listener{
 	}
 
 	public function onPlayerLogin(PlayerLoginEvent $event) : void{
-		$this->plugin->getDatabase()->load($event->getPlayer());
+		$player = $event->getPlayer();
+		$this->plugin->getDatabase()->load($player);
+		$this->last_interactions[$player->getId()] = 0;
 	}
 
 	public function onPlayerQuit(PlayerQuitEvent $event) : void{
@@ -36,7 +38,7 @@ class EventListener implements Listener{
 			$item = $event->getItem();
 			if($item instanceof Tool){
 				$player = $event->getPlayer();
-				if(!isset($this->last_interactions[$pid = $player->getId()]) || $this->last_interactions[$pid] !== $player->ticksLived){
+				if($this->last_interactions[$pid] !== $player->ticksLived){
 					$this->last_interactions[$pid] = $player->ticksLived;
 					$skill_manager = $this->plugin->getSkillManager($player);
 					if($skill_manager->canUseAbilities()){
