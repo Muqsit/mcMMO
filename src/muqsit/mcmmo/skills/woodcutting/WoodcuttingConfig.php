@@ -98,7 +98,7 @@ class WoodcuttingConfig{
 					$xpreward *= $i;
 				}
 
-	            if($multiplier > 1){
+				if($multiplier > 1){
 					foreach($drops as $drop){
 						$drop->setCount($drop->getCount() * $multiplier);
 					}

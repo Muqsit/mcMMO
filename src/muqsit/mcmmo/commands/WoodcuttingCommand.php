@@ -13,10 +13,6 @@ class WoodcuttingCommand extends SkillCommand{
 		return self::WOODCUTTING;
 	}
 
-	public function getHelpMessage(int $page) : string{
-		return "";
-	}
-
 	public function getSkillEffects(Player $player, Skill $skill) : string{
 		return TextFormat::DARK_AQUA . $skill->getAbilityName() . " (ABILITY): " . TextFormat::GREEN . "Make trees explode" . TextFormat::EOL .
 		TextFormat::DARK_AQUA . "Leaf Blower: " . TextFormat::GREEN . "Blow Away Leaves" . TextFormat::EOL .

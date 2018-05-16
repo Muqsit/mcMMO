@@ -13,6 +13,9 @@ class EventListener implements Listener{
 	/** @var Loader */
 	private $plugin;
 
+	/** @var int[] */
+	private $last_interactions = [];
+
 	public function __construct(Loader $plugin){
 		$this->plugin = $plugin;
 	}
@@ -22,7 +25,9 @@ class EventListener implements Listener{
 	}
 
 	public function onPlayerQuit(PlayerQuitEvent $event) : void{
-		$this->plugin->getDatabase()->save($event->getPlayer(), true);
+		$player = $event->getPlayer();
+		$this->plugin->getDatabase()->save($player, true);
+		unset($this->last_interactions[$player->getId()]);
 	}
 
 	public function onPlayerInteract(PlayerInteractEvent $event) : void{
@@ -31,13 +36,16 @@ class EventListener implements Listener{
 			$item = $event->getItem();
 			if($item instanceof Tool){
 				$player = $event->getPlayer();
-				$skill_manager = $this->plugin->getSkillManager($player);
-				if($skill_manager->canUseAbilities()){
-					$skill = $skill_manager->getSkillByItem($item);
-					if($skill !== null){
-						$player->sendMessage($skill_manager->activateAbility($skill->getId()) ? TextFormat::GREEN . "**" . strtoupper($skill->getAbilityName()) . TextFormat::GREEN . " ACTIVATED**" :
-							TextFormat::RED . "You are too tired to use that ability again. " . TextFormat::YELLOW . "(" . $skill->getAbilityCooldownExpire() . "s)"
-						);
+				if(!isset($this->last_interactions[$pid = $player->getId()]) || $this->last_interactions[$pid] !== $player->ticksLived){
+					$this->last_interactions[$pid] = $player->ticksLived;
+					$skill_manager = $this->plugin->getSkillManager($player);
+					if($skill_manager->canUseAbilities()){
+						$skill = $skill_manager->getSkillByItem($item);
+						if($skill !== null){
+							$player->sendMessage($skill_manager->activateAbility($skill->getId()) ? TextFormat::GREEN . "**" . strtoupper($skill->getAbilityName()) . TextFormat::GREEN . " ACTIVATED**" :
+								TextFormat::RED . "You are too tired to use that ability again. " . TextFormat::YELLOW . "(" . $skill->getAbilityCooldownExpire() . "s)"
+							);
+						}
 					}
 				}
 			}
